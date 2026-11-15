@@ -5,7 +5,7 @@ def analizar_categorias(df):
         "Sales": "sum",
         "Profit": "sum",
         "Quantity": "sum",
-        "Discount": "mean"
+        "Discount": "sum"
     })
 
     categorias["Profit Margin"] = (
