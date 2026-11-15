@@ -1,6 +1,6 @@
 
 def analizar_categorias(df):
-
+    # Analisis de rentabilidad por categoria
     categorias = df.groupby("Category").agg({
         "Sales": "sum",
         "Profit": "sum",
