@@ -52,3 +52,4 @@ def analizar_productos_perdidas(df):
    
     return productos_perdidas
 
+# Cambio de prueba en desarrollo-dashboard
