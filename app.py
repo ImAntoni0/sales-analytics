@@ -2,8 +2,6 @@ import pandas as pd
 
 import streamlit as st
 
-import plotly.express as px
-
 from analysis import (
     analizar_categorias, 
     analizar_subcategorias,
@@ -13,6 +11,12 @@ from analysis import (
     analizar_perdidas_por_descuentos, 
     analizar_transacciones_perdida,
     analizar_rentabilidad_producto
+)
+
+from charts import (
+    grafica_ganancias_categorias,
+    grafica_ganancias_subcategorias,
+    grafica_ganancias_descuentos
 )
 
 df = pd.read_excel("sample_superstore.xls")
@@ -89,50 +93,11 @@ st.subheader("Análisis de rentabilidad por subcategoría")
 
 st.dataframe(resultado_subcategorias)
 
-fig = px.bar(
-    resultado_categorias.reset_index(),
-    x="Category",
-    y="Profit",
-    title="Ganancias totales por categoría",
-    text_auto="$,.0f",
-    labels={
-    "Category": "Categoría",
-    "Profit": "Ganancias ($)"
-    }
-)
+fig = grafica_ganancias_categorias(resultado_categorias)
 
 st.plotly_chart(fig)
 
-fig = px.bar(
-    resultado_subcategorias.reset_index().sort_values(
-        "Profit",
-        ascending=True
-    ),
-    x="Profit",
-    y="Sub-Category",
-    orientation="h",
-    title="Ganancias totales por subcategoría",
-    text_auto="$,.0f",
-    labels={
-        "Sub-Category": "Subcategoría",
-        "Profit": "Ganancias ($)"
-    }
-)
-
-fig.update_traces(
-    textposition="outside",
-    cliponaxis=False
-)
-
-fig.update_xaxes(
-    range=[-30000, 65000]
-)
-
-fig.update_layout(
-    height=700,
-    width=1100,
-    margin=dict(r=120)
-)
+fig = grafica_ganancias_subcategorias(resultado_subcategorias)
 
 st.plotly_chart(fig)
 
@@ -149,30 +114,7 @@ st.subheader("Análisis descuentos")
 
 st.dataframe(resultado_descuentos)
 
-
-fig = px.bar(
-    resultado_descuentos.reset_index(),
-    x="Profit",
-    y="Discount",
-    orientation="h",
-    title="Ganancias según el nivel de descuento",
-    text_auto="$,.0f",
-    labels={
-        "Discount": "Descuento",
-        "Profit": "Ganancias ($)"
-    }
-)
-
-fig.update_traces(
-    textposition="outside",
-    cliponaxis=False
-)
-
-fig.update_layout(
-    bargap=0.08,
-    height=700,
-    font=dict(size=14)
-)
+fig = grafica_ganancias_descuentos(resultado_descuentos)
 
 st.plotly_chart(fig)
 
