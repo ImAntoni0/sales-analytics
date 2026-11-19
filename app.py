@@ -10,7 +10,8 @@ from analysis import (
     analizar_descuentos, 
     analizar_perdidas_por_descuentos, 
     analizar_transacciones_perdida,
-    analizar_rentabilidad_producto
+    analizar_rentabilidad_producto,
+    analizar_costos_transacciones
 )
 
 from charts import (
@@ -33,37 +34,15 @@ resultado_descuentos = analizar_descuentos(df)
 
 resultado_analizar_perdidas_por_descuentos = analizar_perdidas_por_descuentos(df)
 
-resultado_analizar_transacciones_perdida = analizar_transacciones_perdida(df, "GBC Ibimaster 500 Manual ProClick Binding System",0.7)
-
-resultado_analizar_transacciones_perdida["Cost"] = resultado_analizar_transacciones_perdida["Sales"] - resultado_analizar_transacciones_perdida["Profit"]
-
-resultado_analizar_transacciones_perdida["Cost per Unit"] = (
-    resultado_analizar_transacciones_perdida["Cost"] /
-    resultado_analizar_transacciones_perdida["Quantity"]
+resultado_analizar_transacciones_perdida = analizar_transacciones_perdida(
+    df,
+    "GBC Ibimaster 500 Manual ProClick Binding System",
+    0.7
 )
 
-resultado_analizar_transacciones_perdida["Original Price per Unit"] = (
-    resultado_analizar_transacciones_perdida["Sales"] /
-    (
-        resultado_analizar_transacciones_perdida["Quantity"] *
-        (1 - resultado_analizar_transacciones_perdida["Discount"])
-    )
+resultado_analizar_transacciones_perdida = analizar_costos_transacciones(
+    resultado_analizar_transacciones_perdida
 )
-
-resultado_analizar_transacciones_perdida["Price After Discount"] = (
-    resultado_analizar_transacciones_perdida["Original Price per Unit"] *
-    (1 - resultado_analizar_transacciones_perdida["Discount"])
-)
-
-resultado_analizar_transacciones_perdida["Loss per Unit"] = (
-    -resultado_analizar_transacciones_perdida["Profit"] /
-    resultado_analizar_transacciones_perdida["Quantity"]
-)
-
-resultado_analizar_transacciones_perdida = (
-    resultado_analizar_transacciones_perdida.round(2)
-)
-
 
 resultado_analizar_rentabilidad_producto = analizar_rentabilidad_producto(df,"GBC Ibimaster 500 Manual ProClick Binding System")
 

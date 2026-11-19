@@ -88,6 +88,37 @@ def analizar_transacciones_perdida(df, nombre_producto, descuento):
 
     return productos
 
+def analizar_costos_transacciones(transacciones):
+
+    transacciones = transacciones.copy()
+
+    transacciones["Cost"] = (
+        transacciones["Sales"] - transacciones["Profit"]
+    )
+
+    transacciones["Cost per Unit"] = (
+        transacciones["Cost"] / transacciones["Quantity"]
+    )
+
+    transacciones["Original Price per Unit"] = (
+        transacciones["Sales"] /
+        (
+            transacciones["Quantity"] *
+            (1 - transacciones["Discount"])
+        )
+    )
+
+    transacciones["Price After Discount"] = (
+        transacciones["Original Price per Unit"] *
+        (1 - transacciones["Discount"])
+    )
+
+    transacciones["Loss per Unit"] = (
+        -transacciones["Profit"] / transacciones["Quantity"]
+    )
+
+    return transacciones.round(2)
+
 def analizar_rentabilidad_producto(df, nombre_producto):
 
     producto = df[
