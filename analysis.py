@@ -138,6 +138,17 @@ def analizar_rentabilidad_producto(df, nombre_producto):
 
     return producto_descuento
 
+
+def indicadores_generales(df):
+
+    resultado = df.agg({
+        "Sales": "sum",
+        "Profit": "sum",
+        "Quantity": "sum"
+    })
+
+    return resultado
+
 # analizar_descuento_perdidas = resultado_descuentos[
 #     resultado_descuentos["Profit"] < 0
 # ]

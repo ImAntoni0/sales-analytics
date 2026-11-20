@@ -11,7 +11,8 @@ from analysis import (
     analizar_perdidas_por_descuentos, 
     analizar_transacciones_perdida,
     analizar_rentabilidad_producto,
-    analizar_costos_transacciones
+    analizar_costos_transacciones,
+    indicadores_generales
 )
 
 from charts import (
@@ -46,68 +47,102 @@ resultado_analizar_transacciones_perdida = analizar_costos_transacciones(
 
 resultado_analizar_rentabilidad_producto = analizar_rentabilidad_producto(df,"GBC Ibimaster 500 Manual ProClick Binding System")
 
+resultado_indicadores_generales = indicadores_generales(df)
+
 st.title("Sales Analytics Dashboard")
 
 st.write("Exploración y análisis de datos de ventas")
 
-st.subheader("Indicadores generales")
-
-ventas_totales = resultado_categorias["Sales"].sum()
-
-ganancias_totales = resultado_categorias["Profit"].sum()
-
-unidades_totales = resultado_categorias["Quantity"].sum()
-
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Ventas totales", ventas_totales, format="$%,.2f")
-col2.metric("Ganancias totales", ganancias_totales, format="$%,.2f")
-col3.metric("Unidades vendidas", unidades_totales, format="%,.0f")
-
-st.subheader("Análisis de rentabilidad por categoría")
-
-st.dataframe(resultado_categorias)
-
-st.subheader("Análisis de rentabilidad por subcategoría")
-
-st.dataframe(resultado_subcategorias)
-
-fig = grafica_ganancias_categorias(resultado_categorias)
-
-st.plotly_chart(fig)
-
-fig = grafica_ganancias_subcategorias(resultado_subcategorias)
-
-st.plotly_chart(fig)
-
-st.subheader("Análisis de productos con pérdidas")
-
-st.dataframe(
-    resultado_productos_perdidas.sort_values(
-        "Profit",
-        ascending=True
-    )
+pagina = st.sidebar.radio(
+    "Navegación",
+    [
+        "Resumen general",
+        "Análisis de productos",
+        "Análisis de descuentos"
+    ]
 )
 
-st.subheader("Análisis descuentos")
+if pagina == "Resumen general":
 
-st.dataframe(resultado_descuentos)
+    st.write("Estamos en el resumen general")
 
-fig = grafica_ganancias_descuentos(resultado_descuentos)
+    st.subheader("Indicadores generales")
 
-st.plotly_chart(fig)
+    ventas_totales = resultado_indicadores_generales["Sales"]
 
-st.subheader("Análisis descuentos con perdidas")
+    ganancias_totales = resultado_indicadores_generales["Profit"]
 
-st.dataframe(resultado_analizar_perdidas_por_descuentos)
+    unidades_totales = resultado_indicadores_generales["Quantity"]
 
-st.subheader("Analisis de descuento con perdidas del 70%")
+    col1, col2, col3 = st.columns(3)
 
-st.dataframe(resultado_analizar_transacciones_perdida)
+    col1.metric("Ventas totales", ventas_totales, format="$%,.2f")
+    col2.metric("Ganancias totales", ganancias_totales, format="$%,.2f")
+    col3.metric("Unidades vendidas", unidades_totales, format="%,.0f")
 
-st.subheader("Análisis de descuento de producto: ")
+    st.subheader("Análisis de rentabilidad por categoría")
 
-st.dataframe(resultado_analizar_rentabilidad_producto)
+    st.dataframe(resultado_categorias)
+
+    st.subheader("Análisis de rentabilidad por subcategoría")
+
+    st.dataframe(resultado_subcategorias)
+
+    fig = grafica_ganancias_categorias(resultado_categorias)
+
+    st.plotly_chart(fig)
+
+    fig = grafica_ganancias_subcategorias(resultado_subcategorias)
+
+    st.plotly_chart(fig)
+
+elif pagina == "Análisis de productos":
+
+    st.write("Estamos en el análisis de productos")
+
+    st.subheader("Productos más rentables")
+
+    st.dataframe(
+        resultado_productos.sort_values(
+            "Profit",
+            ascending=False
+        )
+    )
+
+    st.subheader("Productos con pérdidas")
+
+    st.dataframe(
+        resultado_productos_perdidas.sort_values(
+            "Profit",
+            ascending=True
+        )
+    )
+
+
+elif pagina == "Análisis de descuentos":
+
+    st.write("Estamos en el análisis de descuentos")
+
+    st.subheader("Análisis descuentos")
+
+    st.dataframe(resultado_descuentos)
+
+    fig = grafica_ganancias_descuentos(resultado_descuentos)
+
+    st.plotly_chart(fig)
+
+    st.subheader("Análisis descuentos con perdidas")
+
+    st.dataframe(resultado_analizar_perdidas_por_descuentos)
+
+    st.subheader("Analisis de descuento con perdidas del 70%")
+
+    st.dataframe(resultado_analizar_transacciones_perdida)
+
+    st.subheader("Análisis de descuento de producto: ")
+
+    st.dataframe(resultado_analizar_rentabilidad_producto)
+
 
 # print(resultado_categorias )
 
