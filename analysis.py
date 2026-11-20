@@ -78,10 +78,9 @@ def analizar_perdidas_por_descuentos(df):
 
     return descuento
 
-def analizar_transacciones_perdida(df, nombre_producto, descuento):
+def analizar_transacciones_producto_descuento(df, nombre_producto, descuento):
 
     productos = df[
-        (df["Profit"] < 0) & 
         (df["Discount"] == descuento) & 
         (df["Product Name"] == nombre_producto)
     ]
