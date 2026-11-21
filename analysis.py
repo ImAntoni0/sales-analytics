@@ -112,8 +112,8 @@ def analizar_costos_transacciones(transacciones):
         (1 - transacciones["Discount"])
     )
 
-    transacciones["Loss per Unit"] = (
-        -transacciones["Profit"] / transacciones["Quantity"]
+    transacciones["Profit per Unit"] = (
+        transacciones["Profit"] / transacciones["Quantity"]
     )
 
     return transacciones.round(2)

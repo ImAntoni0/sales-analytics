@@ -79,3 +79,14 @@ def grafica_ganancias_descuentos(resultado_descuentos):
     )
 
     return fig
+
+def grafica_precios_producto(valores_grafica):
+
+    fig = px.bar(
+        valores_grafica,
+        x="Concepto",
+        y="Precio",
+        title="Comparación de precios por unidad"
+    )
+
+    return fig

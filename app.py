@@ -17,7 +17,8 @@ from analysis import (
 from charts import (
     grafica_ganancias_categorias,
     grafica_ganancias_subcategorias,
-    grafica_ganancias_descuentos
+    grafica_ganancias_descuentos,
+    grafica_precios_producto
 )
 
 df = pd.read_excel("sample_superstore.xls")
@@ -133,6 +134,24 @@ elif pagina == "Análisis de descuentos":
     resultado_analizar_transacciones = analizar_costos_transacciones(
         resultado_analizar_transacciones
     )
+
+    transaccion = resultado_analizar_transacciones.iloc[0]
+
+    valores_grafica = {
+        "Concepto": [
+            "Precio original",
+            "Precio con descuento",
+            "Costo por unidad"
+        ],
+        "Precio": [
+            transaccion["Original Price per Unit"],
+            transaccion["Price After Discount"],
+            transaccion["Cost per Unit"]
+        ]
+    }
+
+    fig = grafica_precios_producto(valores_grafica)
+    st.plotly_chart(fig)
 
     st.subheader("Análisis de descuentos")
     st.dataframe(resultado_descuentos)
