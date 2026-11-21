@@ -135,7 +135,22 @@ elif pagina == "Análisis de descuentos":
         resultado_analizar_transacciones
     )
 
-    transaccion = resultado_analizar_transacciones.iloc[0]
+    cantidad_total = resultado_analizar_transacciones["Quantity"].sum()
+
+    precio_original_promedio = (
+        resultado_analizar_transacciones["Original Price per Unit"]
+        * resultado_analizar_transacciones["Quantity"]
+    ).sum() / cantidad_total
+
+    precio_descuento_promedio = (
+        resultado_analizar_transacciones["Price After Discount"]
+        * resultado_analizar_transacciones["Quantity"]
+    ).sum() / cantidad_total
+
+    costo_promedio = (
+        resultado_analizar_transacciones["Cost per Unit"]
+        * resultado_analizar_transacciones["Quantity"]
+    ).sum() / cantidad_total
 
     valores_grafica = {
         "Concepto": [
@@ -144,9 +159,9 @@ elif pagina == "Análisis de descuentos":
             "Costo por unidad"
         ],
         "Precio": [
-            transaccion["Original Price per Unit"],
-            transaccion["Price After Discount"],
-            transaccion["Cost per Unit"]
+            precio_original_promedio,
+            precio_descuento_promedio,
+            costo_promedio
         ]
     }
 
