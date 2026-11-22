@@ -64,6 +64,36 @@ def analizar_descuentos(df):
         descuentos["Profit"] / descuentos["Sales"]
     ) * 100
 
+    descuentos["Loss Transactions"] = (
+        df.groupby("Discount")["Profit"].apply(
+            lambda x: (x < 0).sum()
+        )
+    )
+
+    descuentos["Profitable Transactions"] = (
+        df.groupby("Discount")["Profit"].apply(
+            lambda x: (x > 0).sum()
+        )
+    )
+
+    descuentos["Break-even Transactions"] = (
+        df.groupby("Discount")["Profit"].apply(
+            lambda x: (x == 0).sum()
+        )
+    )
+
+    descuentos["Total Transactions"] = (
+        descuentos["Loss Transactions"]
+        + descuentos["Profitable Transactions"]
+        + descuentos["Break-even Transactions"]
+    )
+
+    descuentos["Loss Transaction Rate"] = (
+        descuentos["Loss Transactions"]
+        / descuentos["Total Transactions"]
+        * 100
+    ).round(2)
+
     return descuentos
 
 def analizar_perdidas_por_descuentos(df):
