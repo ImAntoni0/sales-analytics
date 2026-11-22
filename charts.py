@@ -90,3 +90,31 @@ def grafica_precios_producto(valores_grafica):
     )
 
     return fig
+
+def grafica_porcentaje_perdidas_descuentos(df):
+
+    df = df.reset_index().copy()
+
+    df["Discount"] = df["Discount"] * 100
+
+    df = df.sort_values(
+        by="Loss Transaction Rate",
+        ascending=False
+    )
+
+    fig = px.bar(
+        df,
+        x="Discount",
+        y="Loss Transaction Rate",
+        title="Porcentaje de registros con pérdidas por descuento"
+    )
+
+    fig.update_traces(
+        texttemplate="%{y:.2f}%",
+        textposition="outside",
+    )
+
+    fig.update_xaxes(ticksuffix="%")
+    fig.update_yaxes(ticksuffix="%")
+
+    return fig
