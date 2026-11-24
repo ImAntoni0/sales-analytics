@@ -118,3 +118,53 @@ def grafica_porcentaje_perdidas_descuentos(df):
     fig.update_yaxes(ticksuffix="%")
 
     return fig
+
+
+
+
+def grafica_perdidas_economicas_descuentos(df):
+
+    df = df.reset_index().copy()
+
+    df = df[df["Profit"] < 0]
+
+    df = df.sort_values(
+        by="Profit",
+        ascending=True
+    )
+
+    df["Loss"] = df["Profit"].abs()
+
+    df["Discount"] = (
+        (df["Discount"] * 100).astype(int).astype(str) + "%"
+    )
+
+    fig = px.bar(
+        df,
+        x="Discount",
+        y="Loss",
+        title="Pérdidas económicas por nivel de descuento",
+        labels={
+            "Discount": "Nivel de descuento",
+            "Loss": "Pérdida económica ($)"
+        },
+        text="Loss"
+    )
+
+    fig.update_xaxes(
+        type="category",
+        categoryorder="array",
+        categoryarray=df["Discount"].tolist()
+    )
+
+    fig.update_traces(
+        texttemplate="$%{y:,.2f}",
+        textposition="outside"
+    )
+
+    fig.update_layout(
+        yaxis_title="Pérdida económica ($)",
+        xaxis_title="Descuento"
+    )
+
+    return fig

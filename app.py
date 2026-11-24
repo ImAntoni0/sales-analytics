@@ -19,7 +19,8 @@ from charts import (
     grafica_ganancias_subcategorias,
     grafica_ganancias_descuentos,
     grafica_precios_producto,
-    grafica_porcentaje_perdidas_descuentos
+    grafica_porcentaje_perdidas_descuentos,
+    grafica_perdidas_economicas_descuentos
 )
 
 df = pd.read_excel("sample_superstore.xls")
@@ -182,6 +183,9 @@ elif pagina == "Análisis de descuentos":
     st.dataframe(descuentos_problematicos)
 
     fig = grafica_porcentaje_perdidas_descuentos(resultado_descuentos)
+    st.plotly_chart(fig)
+
+    fig = grafica_perdidas_economicas_descuentos(resultado_descuentos)
     st.plotly_chart(fig)
 
     fig = grafica_ganancias_descuentos(resultado_descuentos)
