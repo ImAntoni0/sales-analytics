@@ -23,6 +23,12 @@ from charts import (
     grafica_perdidas_economicas_descuentos
 )
 
+st.set_page_config(
+    page_title="Sales Analytics Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
+
 df = pd.read_excel("sample_superstore.xls")
 
 resultado_categorias = analizar_categorias(df)
@@ -35,13 +41,11 @@ resultado_productos_perdidas = analizar_productos_perdidas(df)
 
 resultado_descuentos = analizar_descuentos(df)
 
-resultado_analizar_perdidas_por_descuentos = analizar_perdidas_por_descuentos(df)
-
 resultado_indicadores_generales = indicadores_generales(df)
 
 st.title("Sales Analytics Dashboard")
 
-st.write("Exploración y análisis de datos de ventas")
+st.caption("Exploración y análisis de datos de ventas")
 
 pagina = st.sidebar.radio(
     "Navegación",
@@ -54,37 +58,161 @@ pagina = st.sidebar.radio(
 
 if pagina == "Resumen general":
 
-    st.write("Estamos en el resumen general")
+    st.header("Resumen general")
 
     st.subheader("Indicadores generales")
 
     ventas_totales = resultado_indicadores_generales["Sales"]
-
     ganancias_totales = resultado_indicadores_generales["Profit"]
-
     unidades_totales = resultado_indicadores_generales["Quantity"]
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(
+        3,
+        gap="medium",
+        vertical_alignment="center"
+        )
 
-    col1.metric("Ventas totales", ventas_totales, format="$%,.2f")
-    col2.metric("Ganancias totales", ganancias_totales, format="$%,.2f")
-    col3.metric("Unidades vendidas", unidades_totales, format="%,.0f")
+    with col1:
+        with st.container(border=True):
+            st.caption("VENTAS TOTALES")
+            st.markdown(
+                f"<h2>${ventas_totales:,.2f}</h2>",
+                unsafe_allow_html=True
+            )
+            st.caption("Importe total de ventas")
 
-    st.subheader("Análisis de rentabilidad por categoría")
+    with col2:
+        with st.container(border=True):
+            st.caption("GANANCIAS TOTALES")
+            st.markdown(
+                f"<h2 style='color: #6eaa5b;'>"
+                f"${ganancias_totales:,.2f}</h2>",
+                unsafe_allow_html=True
+            )
+            st.caption("Beneficio total obtenido")
 
-    st.dataframe(resultado_categorias)
+    with col3:
+        with st.container(border=True):
+            st.caption("UNIDADES VENDIDAS")
+            st.markdown(
+                f"<h2>{unidades_totales:,.0f}</h2>",
+                unsafe_allow_html=True
+            )
+            st.caption("Cantidad total de unidades")
+
+
+    col1, col2 = st.columns([5, 6], gap="large")
+
+    with col1:
+        st.subheader("Análisis de rentabilidad por categoría")
+        st.dataframe(
+            resultado_categorias,
+            column_config={
+                "_index": st.column_config.TextColumn("Categoría"),
+                "Sales": st.column_config.NumberColumn(
+                    "Ventas",
+                    format="$%,.2f"
+                ),
+                "Profit": st.column_config.NumberColumn(
+                    "Ganancias",
+                    format="$%,.2f"
+                ),
+                "Quantity": st.column_config.NumberColumn(
+                    "Unidades",
+                    format="%.0f"
+                ),
+                "Discount": st.column_config.NumberColumn(
+                    "Descuento promedio",
+                    format="percent"
+                ),
+                "Profit Margin": st.column_config.NumberColumn(
+                    "Margen de ganancia",
+                    format="%.2f%%"
+                )
+            },
+            hide_index=False,
+            width="stretch"
+        )
+
+    with col2:
+        fig = grafica_ganancias_categorias(resultado_categorias)
+        st.plotly_chart(fig, width="stretch")
+
+
+
 
     st.subheader("Análisis de rentabilidad por subcategoría")
 
-    st.dataframe(resultado_subcategorias)
+    st.dataframe(
+        resultado_subcategorias,
+        column_config={
+            "_index": st.column_config.TextColumn("Subcategoría"),
+            "Sales": st.column_config.NumberColumn(
+                "Ventas",
+                format="$%,.2f"
+            ),
+            "Profit": st.column_config.NumberColumn(
+                "Ganancias",
+                format="$%,.2f"
+            ),
+            "Quantity": st.column_config.NumberColumn(
+                "Unidades",
+                format="%.0f"
+            ),
+            "Discount": st.column_config.NumberColumn(
+                "Descuento promedio",
+                format="percent"
+            ),
+            "Profit Margin": st.column_config.NumberColumn(
+                "Margen de ganancia",
+                format="%.2f%%"
+            )
+        },
+        hide_index=False,
+        width="stretch"
+    )
 
-    fig = grafica_ganancias_categorias(resultado_categorias)
-
-    st.plotly_chart(fig)
 
     fig = grafica_ganancias_subcategorias(resultado_subcategorias)
+    st.plotly_chart(fig, width="stretch")
 
-    st.plotly_chart(fig)
+    mayor_ganancia = resultado_subcategorias.loc[
+        resultado_subcategorias["Profit"].idxmax()
+    ]
+
+    mayor_perdida = resultado_subcategorias.loc[
+        resultado_subcategorias["Profit"].idxmin()
+    ]
+
+
+    st.subheader("Hallazgos principales")
+
+    col1, col2 = st.columns(2, gap="large")
+
+    with col1:
+        with st.container(border=True):
+            st.caption("SUBCATEGORÍA MÁS RENTABLE")
+
+            st.markdown(f"### {mayor_ganancia.name}")
+
+            st.markdown(
+                f"<h2 style='color: #6eaa5b;'>"
+                f"${mayor_ganancia['Profit']:,.2f}</h2>",
+                unsafe_allow_html=True
+            )
+
+    with col2:
+        with st.container(border=True):
+            st.caption("SUBCATEGORÍA CON MAYORES PÉRDIDAS")
+
+            st.markdown(f"### {mayor_perdida.name}")
+
+            st.markdown(
+                f"<h2 style='color: #c13e3e;'>"
+                f"${mayor_perdida['Profit']:,.2f}</h2>",
+                unsafe_allow_html=True
+            )
+
 
 elif pagina == "Análisis de productos":
 
@@ -168,7 +296,7 @@ elif pagina == "Análisis de descuentos":
     }
 
     fig = grafica_precios_producto(valores_grafica)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Análisis de descuentos")
     st.dataframe(resultado_descuentos)
@@ -183,13 +311,13 @@ elif pagina == "Análisis de descuentos":
     st.dataframe(descuentos_problematicos)
 
     fig = grafica_porcentaje_perdidas_descuentos(resultado_descuentos)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, width="stretch")
 
     fig = grafica_perdidas_economicas_descuentos(resultado_descuentos)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, width="stretch")
 
     fig = grafica_ganancias_descuentos(resultado_descuentos)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Transacciones del producto y descuento seleccionados")
     st.dataframe(resultado_analizar_transacciones)

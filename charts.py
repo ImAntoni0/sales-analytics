@@ -15,6 +15,23 @@ def grafica_ganancias_categorias(resultado_categorias):
         }
     )
 
+    fig.update_traces(
+        marker_color=[
+            "#6eaa5b" if valor >= 0 else "#c13e3e"
+            for valor in fig.data[0].y
+        ],
+        textposition="outside" 
+    )
+
+    fig.update_yaxes(
+        tickprefix="$",
+        tickformat=",.0f"
+    )
+
+    fig.update_layout(
+        height=450
+    )
+
     return fig
 
 def grafica_ganancias_subcategorias(resultado_subcategorias):
@@ -36,19 +53,24 @@ def grafica_ganancias_subcategorias(resultado_subcategorias):
     )
 
     fig.update_traces(
+        marker_color=[
+            "#6eaa5b" if valor >= 0 else "#c13e3e"
+            for valor in fig.data[0].x
+        ],
         textposition="outside",
         cliponaxis=False
     )
 
     fig.update_xaxes(
-        range=[-30000, 65000]
+        tickprefix="$",
+        tickformat=",.0f",
+        zeroline=True
     )
 
     fig.update_layout(
         height=700,
-        width=1100,
-        margin=dict(r=120)
-    )
+        margin=dict(r=100)
+    )  
 
     return fig
 
