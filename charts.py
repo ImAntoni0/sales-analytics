@@ -17,7 +17,7 @@ def grafica_ganancias_categorias(resultado_categorias):
 
     fig.update_traces(
         marker_color=[
-            "#6eaa5b" if valor >= 0 else "#c13e3e"
+            "#0F766E" if valor >= 0 else "#C0392B"
             for valor in fig.data[0].y
         ],
         textposition="outside" 
@@ -54,7 +54,7 @@ def grafica_ganancias_subcategorias(resultado_subcategorias):
 
     fig.update_traces(
         marker_color=[
-            "#6eaa5b" if valor >= 0 else "#c13e3e"
+            "#0F766E" if valor >= 0 else "#C0392B"
             for valor in fig.data[0].x
         ],
         textposition="outside",
@@ -187,6 +187,67 @@ def grafica_perdidas_economicas_descuentos(df):
     fig.update_layout(
         yaxis_title="Pérdida económica ($)",
         xaxis_title="Descuento"
+    )
+
+    return fig
+
+
+def grafica_top_productos_rentables(resultado_productos):
+
+    productos = resultado_productos.reset_index().sort_values(
+        "Profit",
+        ascending=False
+    ).head(10)
+
+    fig = px.bar(
+        productos,
+        x="Profit",
+        y="Product Name",
+        orientation="h",
+        title="Top 10 productos más rentables",
+        text_auto="$,.0f"
+    )
+
+    fig.update_traces(
+        marker_color="#0F766E",
+        textposition="outside",
+        cliponaxis=False
+    )
+
+    fig.update_layout(
+        yaxis={"categoryorder": "total ascending"}
+    )
+
+    return fig
+
+def grafica_top_productos_perdidas(resultado_productos):
+
+    productos = resultado_productos.reset_index().sort_values(
+        "Profit",
+        ascending=True
+    ).head(10)
+
+    fig = px.bar(
+        productos,
+        x="Profit",
+        y="Product Name",
+        orientation="h",
+        title="Top 10 productos con mayores pérdidas",
+        text_auto="$,.0f"
+    )
+
+    fig.update_traces(
+        marker_color="#C0392B",
+        textposition="outside",
+        cliponaxis=False
+    )
+
+    fig.update_xaxes(
+        autorange="reversed"
+    )
+
+    fig.update_layout(
+        yaxis={"categoryorder": "total descending"}
     )
 
     return fig

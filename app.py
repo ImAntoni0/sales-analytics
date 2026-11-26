@@ -20,7 +20,9 @@ from charts import (
     grafica_ganancias_descuentos,
     grafica_precios_producto,
     grafica_porcentaje_perdidas_descuentos,
-    grafica_perdidas_economicas_descuentos
+    grafica_perdidas_economicas_descuentos,
+    grafica_top_productos_rentables,
+    grafica_top_productos_perdidas
 )
 
 st.set_page_config(
@@ -216,7 +218,201 @@ if pagina == "Resumen general":
 
 elif pagina == "Análisis de productos":
 
-    st.write("Estamos en el análisis de productos")
+    productos_rentables = resultado_productos[
+        resultado_productos["Profit"] > 0
+    ]
+
+    productos_no_rentables = resultado_productos[
+        resultado_productos["Profit"] < 0
+    ]
+
+    productos_punto_equilibrio = resultado_productos[
+        resultado_productos["Profit"] == 0
+    ]
+
+
+    cantidad_productos_rentables = len(productos_rentables)
+
+    cantidad_productos_no_rentables = len(productos_no_rentables)
+
+    cantidad_productos_punto_equilibrio = len(productos_punto_equilibrio)
+
+
+    porcentaje_productos_rentables = (
+        cantidad_productos_rentables / len(resultado_productos)
+    ) * 100
+
+    porcentaje_productos_no_rentables = (
+        cantidad_productos_no_rentables / len(resultado_productos)
+    ) * 100
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            label="Productos rentables",
+            value=cantidad_productos_rentables,
+            delta=f"{porcentaje_productos_rentables:.1f}% del total"
+        )
+
+    with col2:
+        st.metric(
+            label="Productos no rentables",
+            value=cantidad_productos_no_rentables,
+            delta=f"{porcentaje_productos_no_rentables:.1f}% del total"
+        )
+
+    with col3:
+        st.metric(
+            label="Productos en punto de equilibrio",
+            value=cantidad_productos_punto_equilibrio
+        )
+
+
+    productos_disponibles = resultado_productos.index.tolist()
+
+    producto_seleccionado = st.selectbox(
+        "Selecciona un producto",
+        productos_disponibles
+    )
+
+    resultado_producto_seleccionado = resultado_productos.loc[
+        producto_seleccionado
+    ]
+
+
+    st.subheader("Detalle del producto seleccionado")
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    profit = resultado_producto_seleccionado["Profit"]
+
+    if profit > 0:
+        color_profit = "#6eaa5b"
+    elif profit < 0:
+        color_profit = "#C0392B"
+    else:
+        color_profit = "#808080"
+
+    with col1:
+        st.metric(
+            "Ventas",
+            f"${resultado_producto_seleccionado['Sales']:,.2f}"
+        )
+
+    with col2:
+        st.markdown(
+            "<p style='margin-bottom: 0; font-weight: 600;'>Ganancias</p>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            f"<h2 style='color: {color_profit}; margin: -12px 0 0 0;'>"
+            f"${profit:,.2f}</h2>",
+            unsafe_allow_html=True
+        )
+
+    with col3:
+        st.metric(
+            "Unidades vendidas",
+            f"{resultado_producto_seleccionado['Quantity']:,.0f}"
+        )
+
+    with col4:
+        st.metric(
+            "Descuento promedio",
+            f"{resultado_producto_seleccionado['Discount']:.1%}"
+        )
+
+    with col5:
+        st.metric(
+            "Margen de ganancia",
+            f"{resultado_producto_seleccionado['Profit Margin']:.2f}%"
+        )
+
+    transacciones_producto = df[df["Product Name"] == producto_seleccionado]
+
+    transacciones_perdidas = transacciones_producto[
+        transacciones_producto["Profit"] < 0
+    ]
+
+    cantidad_transacciones_perdidas = len(transacciones_perdidas)
+
+    porcentaje_transacciones_perdidas = (
+        cantidad_transacciones_perdidas / len(transacciones_producto)
+    ) * 100
+
+    columnas_transacciones = [
+        "Order Date",
+        "Order ID",
+        "Customer Name",
+        "Segment",
+        "Region",
+        "Sales",
+        "Quantity",
+        "Discount",
+        "Profit"
+    ]
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    with col1:
+        st.metric(
+            "Transacciones con pérdidas",
+            cantidad_transacciones_perdidas
+        )
+
+    with col2:
+        st.metric(
+            "Porcentaje de transacciones con pérdidas",
+            f"{porcentaje_transacciones_perdidas:.2f}%"
+        )
+
+    st.subheader("Historial de transacciones")
+
+    st.caption(
+        f"Total de transacciones: {len(transacciones_producto)}"
+    )
+
+    transacciones_producto = transacciones_producto[columnas_transacciones]
+    transacciones_producto = transacciones_producto.sort_values(
+    by="Order Date",
+    ascending=False
+    )
+
+    st.dataframe(
+        transacciones_producto,
+        column_config={
+            "Order Date": st.column_config.DateColumn(
+                "Fecha del pedido",
+                format="DD/MM/YYYY"
+            ),
+            "Order ID": "ID del pedido",
+            "Customer Name": "Cliente",
+            "Segment": "Segmento",
+            "Region": "Región",
+            "Sales": st.column_config.NumberColumn(
+                "Ventas",
+                format="$%,.2f"
+            ),
+            "Quantity": st.column_config.NumberColumn(
+                "Unidades",
+                format="%,.0f"
+            ),
+            "Discount": st.column_config.NumberColumn(
+                "Descuento",
+                format="percent"
+            ),
+            "Profit": st.column_config.NumberColumn(
+                "Ganancias",
+                format="$%,.2f"
+            )
+        },
+        hide_index=True,
+        width="stretch"
+    )
+
+
 
     st.subheader("Productos más rentables")
 
@@ -224,8 +420,34 @@ elif pagina == "Análisis de productos":
         resultado_productos.sort_values(
             "Profit",
             ascending=False
-        )
+        ).head(10),
+        column_config={
+            "_index": st.column_config.TextColumn("Producto"),
+            "Sales": st.column_config.NumberColumn(
+                "Ventas",
+                format="$%,.2f"
+            ),
+            "Profit": st.column_config.NumberColumn(
+                "Ganancias",
+                format="$%,.2f"
+            ),
+            "Quantity": st.column_config.NumberColumn(
+                "Unidades",
+                format="%,.0f"
+            ),
+            "Discount": st.column_config.NumberColumn(
+                "Descuento",
+                format="percent"
+            ),
+            "Profit Margin": st.column_config.NumberColumn(
+                "Margen de ganancia",
+                format="%.2f%%"
+            )
+        }
     )
+
+    fig = grafica_top_productos_rentables(resultado_productos)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Productos con pérdidas")
 
@@ -233,8 +455,34 @@ elif pagina == "Análisis de productos":
         resultado_productos_perdidas.sort_values(
             "Profit",
             ascending=True
-        )
+        ).head(10),
+        column_config={
+            "_index": st.column_config.TextColumn("Producto"),
+            "Sales": st.column_config.NumberColumn(
+                "Ventas",
+                format="$%,.2f"
+            ),
+            "Profit": st.column_config.NumberColumn(
+                "Ganancias",
+                format="$%,.2f"
+            ),
+            "Quantity": st.column_config.NumberColumn(
+                "Unidades",
+                format="%,.0f"
+            ),
+            "Discount": st.column_config.NumberColumn(
+                "Descuento",
+                format="percent"
+            ),
+            "Profit Margin": st.column_config.NumberColumn(
+                "Margen de ganancia",
+                format="%.2f%%"
+            )
+        }
     )
+
+    fig = grafica_top_productos_perdidas(resultado_productos_perdidas)
+    st.plotly_chart(fig, width="stretch")
 
 
 elif pagina == "Análisis de descuentos":
