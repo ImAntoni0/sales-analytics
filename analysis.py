@@ -1,6 +1,9 @@
 
+import pandas as pd
+
+
 def analizar_categorias(df):
-    # Analisis de rentabilidad por categoria
+
     categorias = df.groupby("Category").agg({
         "Sales": "sum",
         "Profit": "sum",
@@ -13,6 +16,7 @@ def analizar_categorias(df):
     ) * 100
 
     return categorias
+
 
 def analizar_subcategorias(df):
 
@@ -29,6 +33,7 @@ def analizar_subcategorias(df):
 
     return subcategorias
 
+
 def analizar_productos(df):
 
     productos = df.groupby("Product Name").agg({
@@ -44,13 +49,15 @@ def analizar_productos(df):
 
     return productos
 
+
 def analizar_productos_perdidas(df):
 
     productos = analizar_productos(df)
 
     productos_perdidas = productos[productos["Profit"] < 0]
-   
+
     return productos_perdidas
+
 
 def analizar_descuentos(df):
 
@@ -96,6 +103,7 @@ def analizar_descuentos(df):
 
     return descuentos
 
+
 def analizar_perdidas_por_descuentos(df):
 
     perdidas = df[df["Profit"] < 0]
@@ -108,14 +116,18 @@ def analizar_perdidas_por_descuentos(df):
 
     return descuento
 
-def analizar_transacciones_producto_descuento(df, nombre_producto, descuento):
+
+def analizar_transacciones_producto_descuento(
+    df, nombre_producto, descuento
+):
 
     productos = df[
-        (df["Discount"] == descuento) & 
+        (df["Discount"] == descuento) &
         (df["Product Name"] == nombre_producto)
     ]
 
     return productos
+
 
 def analizar_costos_transacciones(transacciones):
 
@@ -148,6 +160,7 @@ def analizar_costos_transacciones(transacciones):
 
     return transacciones.round(2)
 
+
 def analizar_rentabilidad_producto(df, nombre_producto):
 
     producto = df[
@@ -161,9 +174,9 @@ def analizar_rentabilidad_producto(df, nombre_producto):
     })
 
     producto_descuento["Profit Margin"] = (
-    producto_descuento["Profit"] /
-    producto_descuento["Sales"]
-) * 100
+        producto_descuento["Profit"] /
+        producto_descuento["Sales"]
+    ) * 100
 
     return producto_descuento
 
@@ -178,10 +191,67 @@ def indicadores_generales(df):
 
     return resultado
 
-# analizar_descuento_perdidas = resultado_descuentos[
-#     resultado_descuentos["Profit"] < 0
-# ]
 
-# Cambio de prueba en desarrollo-dashboard
+def analizar_pedidos_por_descuento(df):
 
-# Cambio exclusivo de nueva-funcionalidad
+
+    detalle_pedidos_descuento = df.groupby(
+        ["Order ID", "Discount"],
+        as_index=False
+    )["Profit"].sum()
+
+
+    combinaciones_perdidas = detalle_pedidos_descuento[
+        detalle_pedidos_descuento["Profit"] < 0
+    ]
+
+    combinaciones_rentables = detalle_pedidos_descuento[
+        detalle_pedidos_descuento["Profit"] > 0
+    ]
+
+    combinaciones_equilibradas = detalle_pedidos_descuento[
+        detalle_pedidos_descuento["Profit"] == 0
+    ]
+
+
+    resumen = pd.DataFrame(
+        index=detalle_pedidos_descuento["Discount"].unique()
+    )
+
+    resumen.index.name = "Discount"
+
+
+    resumen["Losses"] = (
+        combinaciones_perdidas.groupby("Discount")["Profit"].sum()
+    )
+
+    resumen["Profits"] = (
+        combinaciones_rentables.groupby("Discount")["Profit"].sum()
+    )
+
+
+    resumen["Loss Combinations"] = (
+        combinaciones_perdidas.groupby("Discount").size()
+    )
+
+    resumen["Profitable Combinations"] = (
+        combinaciones_rentables.groupby("Discount").size()
+    )
+
+    resumen["Break-even"] = (
+        combinaciones_equilibradas.groupby("Discount").size()
+    )
+
+    resumen["Total Combinations"] = (
+        detalle_pedidos_descuento.groupby("Discount").size()
+    )
+
+    resumen = resumen.fillna(0)
+
+
+    resumen["Loss Rate"] = (
+        resumen["Loss Combinations"]
+        / resumen["Total Combinations"]
+    ) * 100
+
+    return resumen.sort_index()

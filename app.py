@@ -8,10 +8,10 @@ from analysis import (
     analizar_productos, 
     analizar_productos_perdidas,
     analizar_descuentos, 
-    analizar_perdidas_por_descuentos, 
     analizar_transacciones_producto_descuento,
     analizar_costos_transacciones,
-    indicadores_generales
+    indicadores_generales,
+    analizar_pedidos_por_descuento
 )
 
 from charts import (
@@ -22,7 +22,11 @@ from charts import (
     grafica_porcentaje_perdidas_descuentos,
     grafica_perdidas_economicas_descuentos,
     grafica_top_productos_rentables,
-    grafica_top_productos_perdidas
+    grafica_top_productos_perdidas,
+    grafica_tasa_perdidas_pedidos,
+    grafica_perdidas_pedidos,
+    grafica_ganancias_pedidos,
+    grafica_combinaciones_por_resultado
 )
 
 st.set_page_config(
@@ -44,6 +48,27 @@ resultado_productos_perdidas = analizar_productos_perdidas(df)
 resultado_descuentos = analizar_descuentos(df)
 
 resultado_indicadores_generales = indicadores_generales(df)
+
+resultado_pedidos_descuentos = analizar_pedidos_por_descuento(df)
+
+tabla_pedidos_descuentos = resultado_pedidos_descuentos.reset_index().copy()
+
+tabla_pedidos_descuentos["Discount"] = (
+    tabla_pedidos_descuentos["Discount"] * 100
+)
+
+tabla_pedidos_descuentos = tabla_pedidos_descuentos.rename(
+    columns={
+        "Discount": "Descuento (%)",
+        "Losses": "Pérdidas ($)",
+        "Profits": "Ganancias ($)",
+        "Break-even": "Combinaciones en equilibrio",
+        "Loss Combinations": "Combinaciones con pérdidas",
+        "Profitable Combinations": "Combinaciones rentables",
+        "Total Combinations": "Total de combinaciones",
+        "Loss Rate": "Tasa de pérdidas (%)"
+    }
+)
 
 st.title("Sales Analytics Dashboard")
 
@@ -485,9 +510,90 @@ elif pagina == "Análisis de productos":
     st.plotly_chart(fig, width="stretch")
 
 
+
 elif pagina == "Análisis de descuentos":
 
-    st.write("Estamos en el análisis de descuentos")
+
+
+    st.header("Rentabilidad general por descuento")
+
+    st.subheader("Resumen de descuentos")
+    st.dataframe(resultado_descuentos)
+
+    st.subheader("Descuentos con mayor porcentaje de pérdidas")
+
+    descuentos_problematicos = resultado_descuentos.sort_values(
+        by="Loss Transaction Rate",
+        ascending=False
+    )
+
+    st.dataframe(descuentos_problematicos)
+
+    fig = grafica_porcentaje_perdidas_descuentos(resultado_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+    fig = grafica_perdidas_economicas_descuentos(resultado_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+    fig = grafica_ganancias_descuentos(resultado_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+
+
+
+    st.header("Análisis de pedidos por descuento")
+
+    st.caption(
+        "Agrupación de pedidos según el nivel de descuento "
+        "y su resultado económico."
+    )
+
+    st.dataframe(
+    tabla_pedidos_descuentos,
+    hide_index=True,
+    column_config={
+        "Descuento (%)": st.column_config.NumberColumn(
+            format="%.0f%%"
+        ),
+        "Pérdidas ($)": st.column_config.NumberColumn(
+            format="$%,.2f"
+        ),
+        "Ganancias ($)": st.column_config.NumberColumn(
+            format="$%,.2f"
+        ),
+        "Combinaciones con pérdidas": st.column_config.NumberColumn(
+            format="%d"
+        ),
+        "Combinaciones rentables": st.column_config.NumberColumn(
+            format="%d"
+        ),
+        "Combinaciones en equilibrio": st.column_config.NumberColumn(
+            format="%d"
+        ),
+        "Total de combinaciones": st.column_config.NumberColumn(
+            format="%d"
+        ),
+        "Tasa de pérdidas (%)": st.column_config.NumberColumn(
+            format="%.2f%%"
+        )
+    },
+    width="stretch"
+    )
+
+    fig = grafica_tasa_perdidas_pedidos(resultado_pedidos_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+    fig = grafica_perdidas_pedidos(resultado_pedidos_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+    fig = grafica_ganancias_pedidos(resultado_pedidos_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+    fig = grafica_combinaciones_por_resultado(resultado_pedidos_descuentos)
+    st.plotly_chart(fig, width="stretch")
+
+
+    st.header("Análisis de un producto específico")
 
     producto_seleccionado = st.selectbox(
         "Selecciona un producto",
@@ -546,29 +652,14 @@ elif pagina == "Análisis de descuentos":
     fig = grafica_precios_producto(valores_grafica)
     st.plotly_chart(fig, width="stretch")
 
-    st.subheader("Análisis de descuentos")
-    st.dataframe(resultado_descuentos)
-
-    st.subheader("Descuentos con mayor porcentaje de pérdidas")
-
-    descuentos_problematicos = resultado_descuentos.sort_values(
-        by="Loss Transaction Rate",
-        ascending=False
-    )
-
-    st.dataframe(descuentos_problematicos)
-
-    fig = grafica_porcentaje_perdidas_descuentos(resultado_descuentos)
-    st.plotly_chart(fig, width="stretch")
-
-    fig = grafica_perdidas_economicas_descuentos(resultado_descuentos)
-    st.plotly_chart(fig, width="stretch")
-
-    fig = grafica_ganancias_descuentos(resultado_descuentos)
-    st.plotly_chart(fig, width="stretch")
-
     st.subheader("Transacciones del producto y descuento seleccionados")
     st.dataframe(resultado_analizar_transacciones)
+
+
+
+
+
+
 
 # print(resultado_categorias )
 
